@@ -3,123 +3,54 @@
 
 Projet Hébergement Site Statique AWS S3 avec CI/CD GitHub
 
+1. Création du site
 
+On fait un petit site web fichier text sans base de donnée 
 
-1. Développement du site statique
+Il n’y a pas de serveur compliqué, juste des pages simples.
 
-Création d’un site HTML/CSS léger, optimisé pour un hébergement S3.
+2. Hébergement sur S3 (Amazon)
 
-Architecture sans back-end → réduction des coûts et amélioration des performances.
+On crée un “bucket” S3, qui est comme un dossier sur internet.
 
-2. Mise en place du bucket S3 (Static Website Hosting)
+On met notre site dedans et on le rend accessible sur internet.
 
-Création d’un bucket apple-sitewebaws.
+La page principale s’appelle index.html.
 
-Activation du mode Static Website Hosting.
+3. Sécurité du bucket
 
-Configuration du point d’entrée index.html.
+Les gens peuvent seulement lire le site, ils ne peuvent rien modifier.
 
-Objectif technique : utiliser S3 comme service d’hébergement scalable et hautement disponible, sans serveur.
+C’est sécurisé, personne ne peut supprimer ou changer nos fichiers.
 
-3. Configuration de la sécurité S3 (Bucket Policy)
-Bucket Policy : Accès public en lecture seule
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Sid": "PublicReadGetObject",
-      "Effect": "Allow",
-      "Principal": "*",
-      "Action": "s3:GetObject",
-      "Resource": "arn:aws:s3:::apple-sitewebaws/*"
-    }
-  ]
-}
+4. Utilisateur spécial pour GitHub
 
+On crée un compte spécial (IAM) pour mettre à jour le site automatiquement.
 
-Permet uniquement GET.
+Ce compte peut seulement ajouter, supprimer ou lister les fichiers du site.
 
-Empêche toute modification ou suppression via le public.
+Il ne peut rien faire d’autre pour plus de sécurité.
 
-Principe appliqué : sécurité minimale nécessaire (Least Privilege).
+5. Déploiement automatique avec GitHub Actions
 
-4. Création d’un utilisateur IAM dédié avec permissions S3 limitées
+Chaque fois qu’on change le site dans GitHub, le site se met à jour automatiquement sur S3.
 
-Permissions autorisées :
+GitHub utilise des codes secrets pour se connecter à Amazon.
 
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Action": [
-        "s3:PutObject",
-        "s3:DeleteObject",
-        "s3:ListBucket"
-      ],
-      "Resource": [
-        "arn:aws:s3:::apple-sitewebaws",
-        "arn:aws:s3:::apple-sitewebaws/*"
-      ]
-    }
-  ]
-}
+La commande principale copie les fichiers du site sur S3 et supprime ceux qui ne sont plus utilisés.
 
+6. Vérification
 
-Objectif : permettre uniquement les actions nécessaires au pipeline CI/CD.
+On regarde si le site fonctionne bien.
 
-5. Mise en place du pipeline CI/CD avec GitHub Actions
+On vérifie que tout est sécurisé et accessible au public.
 
-Workflow déclenché automatiquement sur chaque push dans main.
+Résultat final
 
-name: Deploy to S3
+Site web en ligne
+Mise à jour automatique quand on change quelque chose dans GitHub.
 
-on:
-  push:
-    branches:
-      - main
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-
-      - uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: eu-west-3
-
-      - run: aws s3 sync . s3://apple-sitewebaws --delete
-
-Fonctionnement technique
-
-Authentification sécurisée via GitHub Secrets.
-
-Synchronisation automatique → aws s3 sync.
-
-Suppression des fichiers obsolètes (--delete).
-
-Processus 100% automatisé.
-
-6. Tests et validation
-
-Vérification après chaque pipeline : accessibilité du site, cohérence du contenu, statut S3.
-
-Tests de synchronisation GitHub → AWS.
-
-Validation que la policy IAM et les accès publics fonctionnent correctement.
-
-Résultat
-
-Déploiement entièrement automatisé via GitHub Actions.
-
-Architecture serverless économique basée sur S3.
-
-Sécurisation IAM + Bucket Policy selon les bonnes pratiques AWS.
-
-Site statique disponible publiquement avec haute disponibilité.
+Site sécurisé et disponible pour tout le monde.
 
 
 
